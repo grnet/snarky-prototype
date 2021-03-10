@@ -1,0 +1,9 @@
+*.sw*
+*cache*
+*.pyc
+*coverage*
+venv/
+env/
+dist/
+build/
+*.egg-info/
