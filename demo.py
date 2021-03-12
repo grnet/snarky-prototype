@@ -108,8 +108,11 @@ def generate_srs_s(tau, G, H, qap):
         )
     return srs_s
 
-def setup(tau):
-    raise NotImplementedError
+def setup(tau, G, H, qap):
+    srs_u = generate_srs_u(tau, G, H, n=qap.n)
+    srs_s = generate_srs_s(tau, G, H, qap)
+    srs = (srs_u, srs_s)
+    return srs, tau
 
 
 # Utils
@@ -147,18 +150,21 @@ if __name__ == '__main__':
 
     from bplib import bp
 
-    # Create context
+    # Create algebraic context
 
     G_T = bp.BpGroup()                      # bilinear pairing G_1 x G_2 -> G_T
     p = G_T.order()                         # p = order(G_T)
     G, H = G_T.gen1(), G_T.gen2()           # G_1 = <G>, G_2 = <H>
+
+    # Trapdoor
+
     tau = mk_random_tau(G_T)                # τ = (α, β, δ, x), α, β, δ, x E (Z_p)^* random
 
-    # Setup
+    # QAP
 
-    M = 5   # 6 = M + 1 length of u, v, w
-    N = 4   # 4 = N degree of t, 3 = N - 1 degree of u_i, v_i, w_i, 0 <= i <=5
-    L = 3   # l + 1 <= m
+    M = 5
+    N = 4
+    L = 3
 
     u = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
     v = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
@@ -167,6 +173,8 @@ if __name__ == '__main__':
 
     qap = QAP(p, u, v, w, t, n=N, m=M, l=L)
 
-    srs_u = generate_srs_u(tau, G, H, n=N)
-    srs_s = generate_srs_s(tau, G, H, qap)
-    print(srs_s)
+    # SRS generation
+
+    srs, trapdoor = setup(tau, G, H, qap)
+    assert trapdoor == tau
+    print(srs)
