@@ -37,7 +37,10 @@ class Poly(object):
 
 class QAP(object):
 
-    def __init__(self, p, u, v, w, t, n, m, l):
+    def __init__(self, ctx, u, v, w, t, n, m, l):
+        # TODO: Reduce numerical parameters
+
+        p = ctx.p
 
         # Compatibility checks
 
@@ -63,8 +66,12 @@ class QAP(object):
         self.l = l
 
 
-def generate_srs_u(tau, G, H, n):
+def generate_srs_u(ctx, tau, n):
     srs_u = [[], []]
+
+    G = ctx.G
+    H = ctx.H
+
     alpha, beta, _, x = extract_tau(tau)
     for i in range(0, 2 * n -1):                # 0 <= i <= 2n - 2
         srs_u[0].append((
@@ -80,9 +87,16 @@ def generate_srs_u(tau, G, H, n):
         ))
     return srs_u
 
-def generate_srs_s(tau, G, H, qap):
+def generate_srs_s(ctx, tau, qap):
+    assert ctx.p == qap.p
+    p = ctx.p
+    G = ctx.G
+    H = ctx.H
+    
+
     alpha, beta, delta, x = extract_tau(tau)
 
+    # TODO: Implement and apply QAP extraction
     u = qap.u
     v = qap.u
     w = qap.v
@@ -108,9 +122,9 @@ def generate_srs_s(tau, G, H, qap):
         )
     return srs_s
 
-def setup(tau, G, H, qap):
-    srs_u = generate_srs_u(tau, G, H, n=qap.n)
-    srs_s = generate_srs_s(tau, G, H, qap)
+def setup(ctx, tau, qap):
+    srs_u = generate_srs_u(ctx, tau, n=qap.n)
+    srs_s = generate_srs_s(ctx, tau, qap)
     srs = (srs_u, srs_s)
     return srs, tau
 
@@ -125,40 +139,41 @@ def toBn(num):
 def bnZero():
     return toBn(0)
 
-def mk_rand(p):
+def randstar(p):
     """
-    Generate a random element of the field (Z_p) ^ *, p prime.
-
-    :type p: petlib.bn.Bn
-    :rtype: petlib.bn.Bn
-
+    Generate a random element of the prime field (Z_p)*
     """
     return (p - 1).random()
 
-def mk_random_tau(group):
-    p = group.order()
-    alpha = mk_rand(p)
-    beta = mk_rand(p)
-    delta = mk_rand(p)
-    x = mk_rand(p)
+def generate_trapdoor(ctx):
+    # TODO: Provide default values for alpha, beta, delta, x
+    p = ctx.p
+    alpha = randstar(p)
+    beta = randstar(p)
+    delta = randstar(p)
+    x = randstar(p)
     tau = Tau(alpha, beta, delta, x)
     return tau
+
+CTX = namedtuple('CTX', ['p', 'G', 'H'])
+
+def create_algebraic_context():
+    from bplib import bp
+    G_T = bp.BpGroup()                      # bilinear pairing G_1 x G_2 -> G_T
+    ctx = CTX(
+        p=G_T.order(),                      # order of G_T
+        G=G_T.gen1(),                       # generator of G_1
+        H=G_T.gen2(),                       # generator of G_2
+    )
+    return ctx
+
 
 
 if __name__ == '__main__':
     print('Snarky Ceremonies')
 
-    from bplib import bp
-
-    # Create algebraic context
-
-    G_T = bp.BpGroup()                      # bilinear pairing G_1 x G_2 -> G_T
-    p = G_T.order()                         # p = order(G_T)
-    G, H = G_T.gen1(), G_T.gen2()           # G_1 = <G>, G_2 = <H>
-
-    # Trapdoor
-
-    tau = mk_random_tau(G_T)                # τ = (α, β, δ, x), α, β, δ, x E (Z_p)^* random
+    ctx = create_algebraic_context()
+    tau = generate_trapdoor(ctx)                # τ = (α, β, δ, x), α, β, δ, x E (Z_p)* random
 
     # QAP
 
@@ -171,10 +186,10 @@ if __name__ == '__main__':
     w = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
     t = Poly([0, 0, 0, 0, 0])
 
-    qap = QAP(p, u, v, w, t, n=N, m=M, l=L)
+    qap = QAP(ctx, u, v, w, t, n=N, m=M, l=L)
 
     # SRS generation
 
-    srs, trapdoor = setup(tau, G, H, qap)
+    srs, trapdoor = setup(ctx, tau, qap)
     assert trapdoor == tau
     print(srs)
