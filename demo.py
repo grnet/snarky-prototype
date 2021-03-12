@@ -37,33 +37,24 @@ class Poly(object):
 
 class QAP(object):
 
-    def __init__(self, ctx, u, v, w, t, n, m, l):
-        # TODO: Reduce numerical parameters
-
-        p = ctx.p
-
-        # Compatibility checks
-
-        assert l + 1 <= m
-        assert len(u) == m + 1
-        assert len(v) == m + 1
+    def __init__(self, ctx, u, v, w, t, l):
+        self.p = ctx.p
+        m = len(u) - 1
+        assert len(v) == m + 1 
         assert len(w) == m + 1
-        assert t.degree() == n
+        self.m = m
+        assert l + 1 <= m
+        self.l = l
+        n = t.degree()
+        self.t = t
+        self.n = n
         for i in range(0, m + 1):
             assert u[i].degree() == n - 1
             assert v[i].degree() == n - 1
             assert w[i].degree() == n - 1
-
-        # Set parameters
-
-        self.p = p
         self.u = u
         self.v = v
         self.w = w
-        self.t = t
-        self.n = n
-        self.m = m
-        self.l = l
 
 
 def generate_srs_u(ctx, tau, n):
@@ -78,7 +69,7 @@ def generate_srs_u(ctx, tau, n):
             (x ** i) * G,                       # (x ^ i) * G
             (x ** i) * H,                       # (x ^ i) * H
         ))
-    for i in range(0, N):                       # 0 <= i <= n - 1
+    for i in range(0, n):                       # 0 <= i <= n - 1
         srs_u[1].append((
             (alpha * x ** i) * G,               # (α x ^ i) * G 
             (beta  * x ** i) * G,               # (β x ^ i) * G 
@@ -177,16 +168,15 @@ if __name__ == '__main__':
 
     # QAP
 
-    M = 5
-    N = 4
+    # m=5, n=4, l=3
+
+    u = [Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0])]
+    v = [Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0])]
+    w = [Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0]), Poly([1, 0, 0, 0])]
+    t = Poly([1, 0, 0, 0, 0])
     L = 3
 
-    u = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
-    v = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
-    w = [Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0]), Poly([0, 0, 0, 0])]
-    t = Poly([0, 0, 0, 0, 0])
-
-    qap = QAP(ctx, u, v, w, t, n=N, m=M, l=L)
+    qap = QAP(ctx, u, v, w, t, l=L)
 
     # SRS generation
 
