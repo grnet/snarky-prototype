@@ -17,9 +17,9 @@ if __name__ == '__main__':
     description = __doc__
     epilog = ''
     parser = argparse.ArgumentParser(prog=prog,
-                        usage=usage,
-                        description=__doc__,
-                        epilog=epilog)
+        usage=usage,
+        description=__doc__,
+        epilog=epilog)
 
     parser.add_argument('-m', type=int, default=5, dest='m',
             help="m parameter for QAP (default: 5)")
@@ -40,4 +40,42 @@ if __name__ == '__main__':
 
     # Setup (SRS generation)
     srs, trapdoor = setup(ctx, trapdoor, qap)
-    print(srs)
+    # print(srs)
+
+    # Verification, Fig. 7, pg. 20
+
+    _, G, H = ctx
+
+    # Verification Helpers, TODO: Integrate with context
+
+    def isG1Elem(elem):
+        import bplib
+        return isinstance(elem, bplib.bp.G1Elem)
+
+    def isG2Elem(elem):
+        import bplib
+        return isinstance(elem, bplib.bp.G2Elem)
+
+    def pair(elem_1, elem_2):
+        import bplib
+        return bplib.bp.BpGroup().pair(elem_1, elem_2)
+
+    # step 1
+    srs_u, srs_s = srs
+    # TODO: Parse Q
+
+    # step 2
+    assert len(srs_u[0]) == 2 * n - 1
+    assert len(srs_u[1]) == n
+    for i in range(0, 2 * n - 1):       # 0 <= i <= 2n - 2
+        assert all((
+            isG1Elem(srs_u[0][i][0]),   # check G ^ (x ^ i) E G_1
+            isG2Elem(srs_u[0][i][1]),   # check H ^ (x ^ i) E G_2
+        ))
+    for i in range(0, n):               # 0 <= i <= n - 1
+        assert all((
+            isG1Elem(srs_u[1][i][0]),   # check G ^ (α * x ^ i) E G_1
+            isG1Elem(srs_u[1][i][1]),   # check G ^ (β * x ^ i) E G_1
+            isG2Elem(srs_u[1][i][2]),   # check H ^ (α * β ^ i) E G_2
+            isG2Elem(srs_u[1][i][3]),   # check H ^ (α * β ^ i) E G_2
+        ))
