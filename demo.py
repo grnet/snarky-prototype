@@ -122,3 +122,10 @@ if __name__ == '__main__':
     for i in range(0, n - 1):           # 0 <= i <= n - 2
         assert isG1Elem(srs_s[3][i])    # (t(x) ^ i) * G E G_1
 
+    # step 8
+    # TODO: Implement
+
+    # step 9
+    assert pair(srs_s[0], H).eq(pair(G, srs_s[1]))      # (δ * G) o H = G o (δ o H)
+    # TODO: Implement second condition                  # δ * G = δ * G ^ k_s != 1
+
