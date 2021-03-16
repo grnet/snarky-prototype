@@ -69,13 +69,42 @@ if __name__ == '__main__':
     assert len(srs_u[1]) == n
     for i in range(0, 2 * n - 1):       # 0 <= i <= 2n - 2
         assert all((
-            isG1Elem(srs_u[0][i][0]),   # check G ^ (x ^ i) E G_1
-            isG2Elem(srs_u[0][i][1]),   # check H ^ (x ^ i) E G_2
+            isG1Elem(srs_u[0][i][0]),   # (x ^ i) * G E G_1
+            isG2Elem(srs_u[0][i][1]),   # (x ^ i) * H E G_2
         ))
     for i in range(0, n):               # 0 <= i <= n - 1
         assert all((
-            isG1Elem(srs_u[1][i][0]),   # check G ^ (α * x ^ i) E G_1
-            isG1Elem(srs_u[1][i][1]),   # check G ^ (β * x ^ i) E G_1
-            isG2Elem(srs_u[1][i][2]),   # check H ^ (α * β ^ i) E G_2
-            isG2Elem(srs_u[1][i][3]),   # check H ^ (α * β ^ i) E G_2
+            isG1Elem(srs_u[1][i][0]),   # (α x ^ i) * G E G_1
+            isG1Elem(srs_u[1][i][1]),   # (β x ^ i) * G E G_1
+            isG2Elem(srs_u[1][i][2]),   # (α x ^ i) * H E G_2
+            isG2Elem(srs_u[1][i][3]),   # (β x ^ i) * H E G_2
         ))
+
+    # step 3
+    # TODO: Implement
+
+    # step 4
+    # TODO: Implement
+
+    # step 5
+    for i in range(1, 2 * n - 1):                           # 1 <= i <= 2n - 2
+        assert all((
+            # ((x ^ i) * G) o H == G o ((x ^ i) * H)
+            pair(srs_u[0][i][0], H).eq(pair(G, srs_u[0][i][1])),
+            # # ((x ^ i) * G) o H == ((x ^ (i - 1)) * G) o ((x ^ 1) * H)
+            pair(srs_u[0][i][0], H).eq(pair(srs_u[0][i - 1][0], srs_u[0][1][1])),
+        ))
+
+    # step 6
+    for i in range(0, n):                                   # 0 <= i <= n - 1
+        all((
+            # ((α x ^ i) * G) o H == G o ((α x ^ i) * H)
+            pair(srs_u[1][i][0], H).eq(pair(G, srs_u[1][i][2])),
+            # ((α x ^ i) * G) o H == ((x ^ i) * G) o ((α x ^ 0) * H)
+            pair(srs_u[1][i][0], H).eq(pair(srs_u[0][i][0], srs_u[1][0][2])),  
+            # ((β x ^ i) * G) o H == G o ((β x ^ i) * H)
+            pair(srs_u[1][i][1], H).eq(pair(G, srs_u[1][i][3])),
+            # ((β x ^ i) * G) o H == ((x ^ i) * G) o ((β x ^ 0) * H)
+            pair(srs_u[1][i][1], H).eq(pair(srs_u[0][i][0], srs_u[1][0][3])),  
+        ))
+
