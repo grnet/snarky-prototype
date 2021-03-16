@@ -108,3 +108,17 @@ if __name__ == '__main__':
             pair(srs_u[1][i][1], H).eq(pair(srs_u[0][i][0], srs_u[1][0][3])),  
         ))
 
+    # step 7
+    assert all((
+        isG1Elem(srs_s[0]),             # δ * G E G_1
+        isG2Elem(srs_s[1]),             # δ * H E G_2
+    ))
+    assert len(srs_s[2]) == m - l       # ((sum ^ i) * G)_{l + 1 <= i <= m}
+    assert len(srs_s[3]) == n - 1       # ((t(x) ^ i) * G)_{0 <= i <= n - 2}
+
+    for i in range(0, m - l):           # 0 <= i <= m - l - 1
+        assert isG1Elem(srs_s[2][i])    # (sum ^ (l + i + 1)) * G E G_1
+
+    for i in range(0, n - 1):           # 0 <= i <= n - 2
+        assert isG1Elem(srs_s[3][i])    # (t(x) ^ i) * G E G_1
+
