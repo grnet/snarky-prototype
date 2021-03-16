@@ -35,7 +35,7 @@ if __name__ == '__main__':
     l = args.l
 
     ctx = create_algebraic_context()
-    trapdoor = generate_trapdoor(ctx)
+    trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)
     qap = QAP.create_default(ctx, m, n, l)
 
     # Setup (SRS generation)
