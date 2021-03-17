@@ -129,3 +129,15 @@ if __name__ == '__main__':
     assert pair(srs_s[0], H).eq(pair(G, srs_s[1]))      # (δ * G) o H = G o (δ o H)
     # TODO: Implement second condition                  # δ * G = δ * G ^ k_s != 1
 
+    # step 10
+    u, v, w, _ = qap.polynomials()
+    for i in range(0, m - l):
+        # sum_{0 <=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + (x ^ j) * G]
+        S_i = sum([
+            u[i].coeff(j) * srs_u[1][j][1] +            # (u_ij (β x ^ j)) * G  
+            v[i].coeff(j) * srs_u[1][j][0] +            # (v_ij (α x ^ j)) * G
+            w[i].coeff(j) * srs_u[0][j][0]              # (x ^ j) * G
+        for j in range(0, n)], 0 * G)
+        # ((sum ^ (l + i + 1)) * G) o (δ o H) == S_i o H
+        assert pair(srs_s[2][i], srs_s[1]).eq(pair(S_i, H))
+
