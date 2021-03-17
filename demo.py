@@ -4,7 +4,7 @@ Snarky Ceremonies demo script
 
 import sys
 import argparse
-from snarky_ceremonies import create_algebraic_context
+from snarky_ceremonies import create_context
 from snarky_ceremonies import generate_trapdoor
 from snarky_ceremonies import QAP
 from snarky_ceremonies import setup 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     n = args.n
     l = args.l
 
-    ctx = create_algebraic_context()
+    ctx = create_context()
     trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)
     qap = QAP.create_default(ctx, m, n, l)
 

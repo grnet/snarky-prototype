@@ -3,14 +3,15 @@ from collections import namedtuple
 
 from snarky_ceremonies.utils import bp, randstar
 
-CTX = namedtuple('CTX', ['p', 'G', 'H'])
+CTX = namedtuple('CTX', ['p', 'G', 'H', 'pair'])
 
-def create_algebraic_context():
-    group = bp.BpGroup()            # bilinear pairing G_1 x G_2 -> G_T
+def create_context():
+    group = bp.BpGroup()            # bilinear pairing o: G_1 x G_2 -> G_T
     p = group.order()               # order of G_T
     G = group.gen1()                # generator of G_1
     H = group.gen2()                # generator of G_2
-    return CTX(p, G, H)
+    pair = group.pair               # pairing operator o
+    return CTX(p, G, H, pair)
 
 
 from snarky_ceremonies.utils import toBn
@@ -84,7 +85,7 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     Verification, Fig. 7, pg. 20
     """
 
-    _, G, H = ctx
+    _, G, H, pair = ctx
     m, n, l = qap.dimensions()
     u, v, w, _ = qap.polynomials()
 
@@ -97,10 +98,6 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     def isG2Elem(elem):
         import bplib
         return isinstance(elem, bplib.bp.G2Elem)
-
-    def pair(elem_1, elem_2):
-        import bplib
-        return bplib.bp.BpGroup().pair(elem_1, elem_2)
 
     # step 1
     srs_u, srs_s = srs

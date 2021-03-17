@@ -1,5 +1,5 @@
 def generate_srs_u(ctx, trapdoor, qap):
-    _, G, H = ctx
+    _, G, H, _ = ctx
     alpha, beta, _, x = trapdoor
     n = qap.n
 
@@ -21,7 +21,7 @@ def generate_srs_u(ctx, trapdoor, qap):
 def generate_srs_s(ctx, trapdoor, qap):
     assert ctx.p == qap.p
 
-    p, G, H = ctx
+    p, G, H, _ = ctx
     alpha, beta, delta, x = trapdoor
     u, v, w, t = qap.polynomials()
     m, n, l = qap.dimensions()
