@@ -157,10 +157,14 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
         # ((sum ^ (l + i + 1)) * G) o (δ o H) == S_i o H
         assert pair(srs_s[2][i], srs_s[1]).eq(pair(S_i, H))
 
-    # # step 11
-    # Gt = sum([], 0 * G)         # Gt = sum_ # TODO
-    # for i in range(0, n - 1):   # 0 <= i <= n - 2
-    #     # ((t(x) ^ i) * G) o (δ * Η) == Gt o ((x ^ i) * H)
-    #     pair(srs_s[3][i], srs_s[1]).eq(pair(Gt, srs_u[0][i][1]))
+    # step 11
+
+    # Compute Gt = sum_{0<=j<=n} (t_j (x ^ j)) G
+    t = qap.t
+    Gt = sum([t.coeff(j) * srs_u[0][j][0] for j in range(0, n + 1)], 0 * G)
+
+    for i in range(0, n - 1):   # 0 <= i <= n - 2
+        # ((t(x) ^ i) * G) o (δ * Η) == Gt o ((x ^ i) * H)
+        pair(srs_s[3][i], srs_s[1]).eq(pair(Gt, srs_u[0][i][1]))
 
     return True
