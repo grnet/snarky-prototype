@@ -1,8 +1,19 @@
 from collections import namedtuple
-from snarky_ceremonies.utils import toBn, randstar
-from snarky_ceremonies.utils import isG1Elem, isG2Elem
-from snarky_ceremonies.algebra import Poly
 
+CTX = namedtuple('CTX', ['p', 'G', 'H', 'pair'])
+
+def create_context():
+    from bplib import bp
+    group = bp.BpGroup()            # bilinear pairing o: G_1 x G_2 -> G_T
+    p = group.order()               # order of G_T
+    G = group.gen1()                # generator of G_1
+    H = group.gen2()                # generator of G_2
+    pair = group.pair               # pairing operator o
+    return CTX(p, G, H, pair)
+
+
+from collections import namedtuple
+from snarky_ceremonies.utils import toBn, randstar
 
 Trapdoor = namedtuple('Trapdoor', 
     ['alpha', 'beta', 'delta', 'x'])   # τ = (α, β, δ, x) E (Z_p)*
@@ -14,6 +25,8 @@ def generate_trapdoor(ctx, alpha=None, beta=None, delta=None, x=None):
     trapdoor = Trapdoor(*args)
     return trapdoor
 
+
+from snarky_ceremonies.algebra import Poly
 
 class QAP(object):
 
@@ -66,6 +79,8 @@ def setup(ctx, trapdoor, qap):
     srs = (srs_u, srs_s)
     return srs, trapdoor
 
+
+from snarky_ceremonies.utils import isG1Elem, isG2Elem
 
 def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     """

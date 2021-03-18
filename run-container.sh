@@ -5,7 +5,7 @@ usage_string="usage: ./$(basename "$0") [OPTIONS]
 Run snarky-ceremonies-dev container with installed prerequisites (Debian)
 
 Options:
- --build   	Build image before running the container
+--build   	(Re-)Build image before running the container
  -h, --help	Display help message and exit
 
 Examples:

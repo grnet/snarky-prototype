@@ -1,6 +1,6 @@
 import pytest
 from snarky_ceremonies.algebra import Poly, toBn
-from snarky_ceremonies.utils import create_context
+from snarky_ceremonies import create_context
 
 ctx = create_context()
 
