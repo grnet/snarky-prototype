@@ -4,7 +4,7 @@ Snarky Ceremonies demo script
 
 import sys
 import argparse
-from snarky_ceremonies import create_context
+from snarky_ceremonies.utils import create_context
 from snarky_ceremonies import generate_trapdoor
 from snarky_ceremonies import QAP
 from snarky_ceremonies import setup 

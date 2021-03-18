@@ -1,6 +1,8 @@
 import pytest
-from snarky_ceremonies.algebra import Poly, toBn, get_default_prime
+from snarky_ceremonies.algebra import Poly, toBn
+from snarky_ceremonies.utils import create_context
 
+ctx = create_context()
 
 @pytest.mark.parametrize('coeffs, expected',
     [
@@ -12,7 +14,7 @@ from snarky_ceremonies.algebra import Poly, toBn, get_default_prime
     ]
 )
 def test_poly_degree(coeffs, expected):
-    assert Poly(coeffs).degree() == expected
+    assert Poly(coeffs, ctx.p).degree() == expected
 
 
 @pytest.mark.parametrize('coeffs, p, x, result',
@@ -26,10 +28,10 @@ def test_poly_degree(coeffs, expected):
         ([1, 0], 7, -1, 1),
         ([1, 0], 7, 666, 1),
         ([1, 3, 7, 4, 5, 7], 7, 0, 1),
-        ([1, 3, 7, 4, 5, 7], None, 0, 1),
-        ([1, 3, 7, 4, 5, 7], None, 1, 27),
-        ([1, 3, 7, 4, 5, 7], None, -1, toBn(-1) % get_default_prime()),
-        ([1, 3, 7, 4, 5, 7], None, 666, 918195749349787),
+        ([1, 3, 7, 4, 5, 7], ctx.p, 0, 1),
+        ([1, 3, 7, 4, 5, 7], ctx.p, 1, 27),
+        ([1, 3, 7, 4, 5, 7], ctx.p, -1, toBn(-1) % ctx.p),
+        ([1, 3, 7, 4, 5, 7], ctx.p, 666, 918195749349787),
     ]
 )
 def test_poly_eval(coeffs, p, x, result):

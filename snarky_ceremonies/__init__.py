@@ -1,22 +1,11 @@
 from collections import namedtuple
+from snarky_ceremonies.utils import toBn, randstar
+from snarky_ceremonies.utils import isG1Elem, isG2Elem
+from snarky_ceremonies.algebra import Poly
 
 
-from snarky_ceremonies.utils import bp, randstar
-
-CTX = namedtuple('CTX', ['p', 'G', 'H', 'pair'])
-
-def create_context():
-    group = bp.BpGroup()            # bilinear pairing o: G_1 x G_2 -> G_T
-    p = group.order()               # order of G_T
-    G = group.gen1()                # generator of G_1
-    H = group.gen2()                # generator of G_2
-    pair = group.pair               # pairing operator o
-    return CTX(p, G, H, pair)
-
-
-from snarky_ceremonies.utils import toBn
-
-Trapdoor = namedtuple('Trapdoor', ['alpha', 'beta', 'delta', 'x'])   # τ = (α, β, δ, x) E (Z_p)*
+Trapdoor = namedtuple('Trapdoor', 
+    ['alpha', 'beta', 'delta', 'x'])   # τ = (α, β, δ, x) E (Z_p)*
 
 def generate_trapdoor(ctx, alpha=None, beta=None, delta=None, x=None):
     p = ctx.p
@@ -25,8 +14,6 @@ def generate_trapdoor(ctx, alpha=None, beta=None, delta=None, x=None):
     trapdoor = Trapdoor(*args)
     return trapdoor
 
-
-from snarky_ceremonies.algebra import Poly
 
 class QAP(object):
 
@@ -51,10 +38,10 @@ class QAP(object):
 
     @classmethod
     def create_default(cls, ctx, m, n, l):
-        u = [Poly([1] + (n - 1) * [0]) for _ in range(0, m + 1)]
-        v = [Poly([1] + (n - 1) * [0]) for _ in range(0, m + 1)]
-        w = [Poly([1] + (n - 1) * [0]) for _ in range(0, m + 1)]
-        t = Poly([1] + n * [0])
+        u = [Poly.create(ctx, [1] + (n - 1) * [0]) for _ in range(0, m + 1)]
+        v = [Poly.create(ctx, [1] + (n - 1) * [0]) for _ in range(0, m + 1)]
+        w = [Poly.create(ctx, [1] + (n - 1) * [0]) for _ in range(0, m + 1)]
+        t = Poly.create(ctx, [1] + n * [0])
         return cls(ctx, u, v, w, t, l)
 
     def polynomials(self):
@@ -88,16 +75,6 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     _, G, H, pair = ctx
     m, n, l = qap.dimensions()
     u, v, w, _ = qap.polynomials()
-
-    # Verification Helpers, TODO: Integrate with context
-
-    def isG1Elem(elem):
-        import bplib
-        return isinstance(elem, bplib.bp.G1Elem)
-
-    def isG2Elem(elem):
-        import bplib
-        return isinstance(elem, bplib.bp.G2Elem)
 
     # step 1
     srs_u, srs_s = srs
