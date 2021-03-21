@@ -35,8 +35,6 @@ if __name__ == '__main__':
     l = args.l
     verbose = args.verbose  # TODO: Use it
 
-    print(verbose)
-
     # Context creation: order, generators and pairing
     ctx = create_context()
     trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)
@@ -47,4 +45,14 @@ if __name__ == '__main__':
 
     # Verify (SRS verification)
     assert verify(ctx, qap, srs)
+
+    # Temporary discrete log proof demo
+    from snarky_ceremonies.dlog import prove_dlog, verify_dlog
+    from snarky_ceremonies.utils import toBn
+    ctx = create_context()
+    delta = toBn(100)
+    w = delta
+    phi = (delta * ctx.G, delta * ctx.H)
+    pi = prove_dlog(ctx, phi, w)
+    verify_dlog(ctx, phi, pi)
 

@@ -1,15 +1,22 @@
 from collections import namedtuple
 
-CTX = namedtuple('CTX', ['p', 'G', 'H', 'pair'])
+CTX = namedtuple('CTX', ['p', 'G', 'H', 'pair', 'RO'])
 
 def create_context():
     from bplib import bp
+
     group = bp.BpGroup()            # bilinear pairing o: G_1 x G_2 -> G_T
     p = group.order()               # order of G_T
     G = group.gen1()                # generator of G_1
     H = group.gen2()                # generator of G_2
     pair = group.pair               # pairing operator o
-    return CTX(p, G, H, pair)
+
+    # Hash functionality in place of theoretical random oracle
+    def RO(phi):
+        out = group.hashG1(phi[0].export() + phi[1].export())
+        return out
+
+    return CTX(p, G, H, pair, RO)
 
 
 from collections import namedtuple
@@ -87,7 +94,7 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     Verification, Fig. 7, pg. 20
     """
 
-    _, G, H, pair = ctx
+    _, G, H, pair, _ = ctx
     m, n, l = qap.dimensions()
     u, v, w, _ = qap.polynomials()
 
