@@ -43,10 +43,16 @@ if __name__ == '__main__':
     # Setup (SRS generation)
     srs, trapdoor = setup(ctx, trapdoor, qap)
 
-    # Update
-    update(ctx, qap, 1, srs, [])
-    update(ctx, qap, 2, srs, [])
+    # Store proofs
+    Q = [[], []]
+
+    # Updates
+    srs, Q_u = update(ctx, qap, 1, srs, Q)
+    Q[0].append(Q_u)
+
+    srs, Q_s = update(ctx, qap, 2, srs, Q)
+    Q[1].append(Q_s)
 
 
     # Verify (SRS verification)
-    assert verify(ctx, qap, srs)
+    assert verify(ctx, qap, srs, Q)

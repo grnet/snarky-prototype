@@ -222,11 +222,13 @@ def specialize(ctx, qap, srs_u):
             t.coeff(j) * srs_u[0][i + j][0]     # (t_j x ^ (i + j)) * G
         for j in range(0, n)], 0 * G)
         srs_s[3].append(s_i)
+    return srs_s
 
 
 from snarky_ceremonies.utils import isG1Elem, isG2Elem
+from snarky_ceremonies.dlog import verify_dlog
 
-def verify(ctx, qap, srs):   # TODO: Include Q in arguments
+def verify(ctx, qap, srs, Q):
     """
     Verification, Fig. 7, pg. 20
     """
