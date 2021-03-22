@@ -47,22 +47,14 @@ if __name__ == '__main__':
     Q = [[], []]
 
     # Updates
-    srs, Q_u = update(ctx, qap, 1, srs, Q)
-    Q[0].append(Q_u)
-    srs, Q_u = update(ctx, qap, 1, srs, Q)
-    Q[0].append(Q_u)
-    srs, Q_u = update(ctx, qap, 1, srs, Q)
-    Q[0].append(Q_u)
-    srs, Q_s = update(ctx, qap, 2, srs, Q)
-    Q[1].append(Q_s)
-    srs, Q_u = update(ctx, qap, 1, srs, Q)
-    Q[0].append(Q_u)
-    srs, Q_s = update(ctx, qap, 2, srs, Q)
-    Q[1].append(Q_s)
-    srs, Q_s = update(ctx, qap, 2, srs, Q)
-    Q[1].append(Q_s)
-    srs, Q_s = update(ctx, qap, 1, srs, Q)
-    Q[0].append(Q_s)
+    # phis = (2, 2, 2, 2, 2, 1, 1, 1, 2)
+    phis = (1, 1, 1, 2, 2, 2, 2, 1, 1)
+    for phi in phis:
+        srs, rho = update(ctx, qap, phi, srs, Q)
+        if phi == 1:
+            Q[0].append(rho)
+        else:
+            Q[1].append(rho)
 
     # Verify (SRS verification)
     assert verify(ctx, qap, srs, Q)

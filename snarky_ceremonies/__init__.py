@@ -239,6 +239,7 @@ def verify(ctx, qap, srs, Q):
 
     # step 1
     srs_u, srs_s = srs
+    Q_u, Q_s = Q
     # TODO: Parse Q
 
     # step 2
@@ -258,9 +259,8 @@ def verify(ctx, qap, srs, Q):
         ))
 
     # step 3
-    Q_u = Q[0]
     # for i, rho_u in enumerate(Q_u):
-    for i in range(len(Q_u)):           # ρ = [i]
+    for i in range(len(Q_u)):           # ρ = Q_u[i]
         for j in range(0, 3):           # ι Ε {α, β, x}
             # A, B, C, D = rho_u[j]   
             A, B, C, D = Q_u[i][j]   
@@ -308,7 +308,11 @@ def verify(ctx, qap, srs, Q):
         assert isG1Elem(srs_s[3][i])    # (t(x) ^ i) * G E G_1
 
     # step 8
-    # TODO: Implement
+    for i in range(len(Q_s)):           # ρ = Q_s[i]
+        A, B, C, D = Q_s[i]
+        assert verify_dlog(ctx, (B, C), D)
+        if i != 0:
+            assert pair(A, H).eq(pair(Q_s[i - 1][0], C))    # TODO
 
     # step 9
     assert pair(srs_s[0], H).eq(pair(G, srs_s[1]))      # (δ * G) o H = G o (δ o H)
