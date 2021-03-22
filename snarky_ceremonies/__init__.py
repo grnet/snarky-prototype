@@ -240,7 +240,6 @@ def verify(ctx, qap, srs, Q):
     # step 1
     srs_u, srs_s = srs
     Q_u, Q_s = Q
-    # TODO: Parse Q
 
     # step 2
     assert len(srs_u[0]) == 2 * n - 1
@@ -269,7 +268,18 @@ def verify(ctx, qap, srs, Q):
                 assert pair(A, H).eq(pair(Q_u[i - 1][j][0], C))
 
     # step 4
-    # TODO: Implement
+    assert all((
+        srs_u[0][1][0].eq(Q_u[-1][2][0]),
+        not Q_u[-1][2][0].eq(0 * G),
+    ))
+    assert all((
+        srs_u[1][0][0].eq(Q_u[-1][0][0]),
+        not Q_u[-1][0][0].eq(0 * G),
+    ))
+    assert all((
+        srs_u[1][0][1].eq(Q_u[-1][1][0]),
+        not Q_u[-1][1][0].eq(0 * G),
+    ))
 
     # step 5
     for i in range(1, 2 * n - 1):                           # 1 <= i <= 2n - 2
