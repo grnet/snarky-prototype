@@ -87,6 +87,143 @@ def setup(ctx, trapdoor, qap):
     return srs, trapdoor
 
 
+from snarky_ceremonies.utils import randstar
+from snarky_ceremonies.dlog import prove_dlog
+
+def update(ctx, qap, phi, srs, Q):
+    """
+    Update, Fig. 6, pg. 19
+    """
+    p, G, H, _, _ = ctx
+    m, n, l = qap.dimensions()
+    if phi == 1:
+
+        # step 1
+        srs_u = srs[0]
+        # for i in range(0, 2 * n - 1):
+        #     srs_u[0][i][0]  # (x ^ i) * G
+        #     srs_u[0][i][1]  # (x ^ i) * H
+        # for i in range(0, n):
+        #     srs_u[1][i][0]  # (α x ^ i) * G
+        #     srs_u[1][i][1]  # (β x ^ i) * G
+        #     srs_u[1][i][2]  # (α x ^ i) * H
+        #     srs_u[1][i][3]  # (β x ^ i) * H
+
+        # step 2
+        alpha_2 = randstar(p)
+        beta_2 = randstar(p)
+        x_2 = randstar(p)
+
+        # step 3
+        pi_alpha_2 = prove_dlog(ctx, (alpha_2 * G, alpha_2 * H), alpha_2)
+        pi_beta_2 = prove_dlog(ctx, (beta_2 * G, beta_2 * H), beta_2)
+        pi_x_2 = prove_dlog(ctx, (x_2 * G, x_2 * H), x_2)
+
+        # step 4
+        # ρ_α' = (α' * (α x ^ 0) * G, α' * G, α' * H, π_α')
+        rho_alpha_2 = alpha_2 * srs_u[1][0][0], alpha_2 * G, alpha_2 * H,  pi_alpha_2
+
+        # step 5
+        # ρ_β' = (β' * (β x ^ 0) * G, β' * G, β' * H, π_β')
+        rho_beta_2 = beta_2 * srs_u[1][0][1], beta_2 * G, beta_2 * H,  pi_beta_2
+
+        # step 6
+        # ρ_x' = (x' * (x ^ 1) * G, x' * G, x' * H, π_x')
+        rho_x_2 = x_2 * srs_u[0][1][0], x_2 * G, x_2 * H,  pi_x_2
+
+        # step 7
+        # ρ = (ρ_α', ρ_β', ρ_x')
+        rho = rho_alpha_2, rho_beta_2, rho_x_2
+
+        # step 8
+        srs_u_new = [[], []]
+        for i in range(0, 2 * n -1):                # 0 <= i <= 2n - 2
+            srs_u_new[0].append((
+                (x_2 ** i) * srs_u[0][i][0],        # (x' ^ i) * ((x ^ i) * G)
+                (x_2 ** i) * srs_u[0][i][1],        # (x' ^ i) * ((x ^ i) * H)
+            ))
+        for i in range(0, n):                       # 0 <= i <= n - 1
+            srs_u_new[1].append((
+                (alpha_2 * x_2 ** i) * srs_u[1][i][0],    # (α' x' ^ i) * ((α x ^ i) * G)
+                (beta_2  * x_2 ** i) * srs_u[1][i][1],    # (β' x' ^ i) * ((β x ^ i) * G) 
+                (alpha_2 * x_2 ** i) * srs_u[1][i][2],    # (α' x' ^ i) * ((α x ^ i) * H)
+                (beta_2  * x_2 ** i) * srs_u[1][i][3],    # (β' x' ^ i) * ((β x ^ i) * H) 
+            ))
+
+        # step 9
+        srs_s_new = specialize(ctx, qap, srs_u_new)
+
+        # step 10
+        return (srs_u_new, srs_s_new), rho
+
+    if phi == 2:
+        # step 1
+        srs_s = srs[1]
+        # srs_s[0]        # δ * G E G_1
+        # srs_s[1]        # δ * H E G_2
+        # for i in range(0, m - l):   # 0 <= i <= m - l - 1
+        #     assert srs_s[2][i]      # (sum ^ (l + i + 1)) * G E G_1
+        # for i in range(0, n - 1):   # 0 <= i <= n - 2
+        #     assert srs_s[3][i]      # (t(x) ^ i) * G E G_1
+
+        # step 2
+        delta_2 = randstar(p)
+
+        # step 3
+        pi_delta_2 = prove_dlog(ctx, (delta_2 * G, delta_2 * H), delta_2)
+
+        # step 4
+        # ρ = δ' * δ * G, δ' * G, δ' * H, π_δ'
+        rho = delta_2 * srs_s[0], delta_2 * G, delta_2 * H, pi_delta_2
+
+        # step 5
+        srs_s_new = [
+            delta_2 * srs_s[0],     # δ' * δ * G
+            delta_2 * srs_s[1],     # δ' * δ * Η
+            [],
+            [],
+        ]
+        for i in range(0, m - l):   # 0 <= i <= m - l - 1
+            # (sum ^ (l + i + 1) * G) / δ'
+            srs_s_new[2].append(delta_2.mod_inverse(p) * srs_s[2][i])
+        for i in range(0, n - 1):   # 0 <= i <= n - 2
+            # ((t(x) ^ i) * G) / δ'
+            srs_s_new[3].append(delta_2.mod_inverse(p) * srs_s[3][i]) 
+
+        # step 6
+        return (srs[0], srs_s_new), rho
+
+
+def specialize(ctx, qap, srs_u):
+    """
+    Specialize, Fig. 6, pg. 19
+    """
+    # import pdb; pdb.set_trace()
+    _, G, H, _, _ = ctx
+    m, n, l = qap.dimensions()
+    u, v, w, t = qap.polynomials()
+    srs_s = [
+        G,
+        H,
+        [],
+        [],
+    ]
+    for i in range(0, m - l):
+        # sum_{0<=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + (x ^ j) * G]
+        s_i = sum([
+            u[i].coeff(j) * srs_u[1][j][1] +            # (u_ij (β x ^ j)) * G  
+            v[i].coeff(j) * srs_u[1][j][0] +            # (v_ij (α x ^ j)) * G
+            w[i].coeff(j) * srs_u[0][j][0]              # (w_ij (x ^ j)) * G
+        for j in range(0, n)], 0 * G)
+        srs_s[2].append(s_i)
+    for i in range(0, n - 1):
+        # sum_{0<=j<=n-1} (t_j x ^ (i + j)) * G
+        s_i = sum([
+            t.coeff(j) * srs_u[0][i + j][0]     # (t_j x ^ (i + j)) * G
+        for j in range(0, n)], 0 * G)
+        srs_s[3].append(s_i)
+
+
 from snarky_ceremonies.utils import isG1Elem, isG2Elem
 
 def verify(ctx, qap, srs):   # TODO: Include Q in arguments
@@ -170,18 +307,18 @@ def verify(ctx, qap, srs):   # TODO: Include Q in arguments
     # step 10
     # u, v, w, _ = qap.polynomials()
     for i in range(0, m - l):
-        # sum_{0 <=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + (x ^ j) * G]
+        # sum_{0 <=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + w_ij(x ^ j) * G]
         S_i = sum([
             u[i].coeff(j) * srs_u[1][j][1] +            # (u_ij (β x ^ j)) * G  
             v[i].coeff(j) * srs_u[1][j][0] +            # (v_ij (α x ^ j)) * G
-            w[i].coeff(j) * srs_u[0][j][0]              # (x ^ j) * G
+            w[i].coeff(j) * srs_u[0][j][0]              # (w_ij (x ^ j)) * G
         for j in range(0, n)], 0 * G)
         # ((sum ^ (l + i + 1)) * G) o (δ o H) == S_i o H
         assert pair(srs_s[2][i], srs_s[1]).eq(pair(S_i, H))
 
     # step 11
 
-    # Compute Gt = sum_{0<=j<=n} (t_j (x ^ j)) G
+    # Compute Gt = sum_{0<=j<=n} (t_j x ^ j) * G
     t = qap.t
     Gt = sum([t.coeff(j) * srs_u[0][j][0] for j in range(0, n + 1)], 0 * G)
 

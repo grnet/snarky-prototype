@@ -5,7 +5,7 @@ Snarky Ceremonies demo script
 import sys
 import argparse
 from snarky_ceremonies import create_context, \
-    generate_trapdoor, QAP, setup, verify
+    generate_trapdoor, QAP, setup, update, verify
 
 
 if __name__ == '__main__':
@@ -43,16 +43,10 @@ if __name__ == '__main__':
     # Setup (SRS generation)
     srs, trapdoor = setup(ctx, trapdoor, qap)
 
+    # Update
+    update(ctx, qap, 1, srs, [])
+    update(ctx, qap, 2, srs, [])
+
+
     # Verify (SRS verification)
     assert verify(ctx, qap, srs)
-
-    # Temporary discrete log proof demo
-    from snarky_ceremonies.dlog import prove_dlog, verify_dlog
-    from snarky_ceremonies.utils import toBn
-    ctx = create_context()
-    delta = toBn(100)
-    w = delta
-    phi = (delta * ctx.G, delta * ctx.H)
-    pi = prove_dlog(ctx, phi, w)
-    verify_dlog(ctx, phi, pi)
-
