@@ -258,7 +258,15 @@ def verify(ctx, qap, srs, Q):
         ))
 
     # step 3
-    # TODO: Implement
+    Q_u = Q[0]
+    # for i, rho_u in enumerate(Q_u):
+    for i in range(len(Q_u)):           # ρ = [i]
+        for j in range(0, 3):           # ι Ε {α, β, x}
+            # A, B, C, D = rho_u[j]   
+            A, B, C, D = Q_u[i][j]   
+            assert verify_dlog(ctx, (B, C), D)
+            if i != 0:
+                assert pair(A, H).eq(pair(Q_u[i - 1][j][0], C))
 
     # step 4
     # TODO: Implement

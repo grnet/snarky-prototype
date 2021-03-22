@@ -49,10 +49,20 @@ if __name__ == '__main__':
     # Updates
     srs, Q_u = update(ctx, qap, 1, srs, Q)
     Q[0].append(Q_u)
-
+    srs, Q_u = update(ctx, qap, 1, srs, Q)
+    Q[0].append(Q_u)
+    srs, Q_u = update(ctx, qap, 1, srs, Q)
+    Q[0].append(Q_u)
     srs, Q_s = update(ctx, qap, 2, srs, Q)
     Q[1].append(Q_s)
-
+    srs, Q_u = update(ctx, qap, 1, srs, Q)
+    Q[0].append(Q_u)
+    srs, Q_s = update(ctx, qap, 2, srs, Q)
+    Q[1].append(Q_s)
+    srs, Q_s = update(ctx, qap, 2, srs, Q)
+    Q[1].append(Q_s)
+    srs, Q_s = update(ctx, qap, 1, srs, Q)
+    Q[0].append(Q_s)
 
     # Verify (SRS verification)
     assert verify(ctx, qap, srs, Q)
