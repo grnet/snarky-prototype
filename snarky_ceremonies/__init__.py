@@ -100,14 +100,6 @@ def update(ctx, qap, phi, srs, Q):
 
         # step 1
         srs_u = srs[0]
-        # for i in range(0, 2 * n - 1):
-        #     srs_u[0][i][0]  # (x ^ i) * G
-        #     srs_u[0][i][1]  # (x ^ i) * H
-        # for i in range(0, n):
-        #     srs_u[1][i][0]  # (α x ^ i) * G
-        #     srs_u[1][i][1]  # (β x ^ i) * G
-        #     srs_u[1][i][2]  # (α x ^ i) * H
-        #     srs_u[1][i][3]  # (β x ^ i) * H
 
         # step 2
         alpha_2 = randstar(p)
@@ -159,12 +151,6 @@ def update(ctx, qap, phi, srs, Q):
     if phi == 2:
         # step 1
         srs_s = srs[1]
-        # srs_s[0]        # δ * G E G_1
-        # srs_s[1]        # δ * H E G_2
-        # for i in range(0, m - l):   # 0 <= i <= m - l - 1
-        #     assert srs_s[2][i]      # (sum ^ (l + i + 1)) * G E G_1
-        # for i in range(0, n - 1):   # 0 <= i <= n - 2
-        #     assert srs_s[3][i]      # (t(x) ^ i) * G E G_1
 
         # step 2
         delta_2 = randstar(p)
@@ -268,18 +254,19 @@ def verify(ctx, qap, srs, Q):
                 assert pair(A, H).eq(pair(Q_u[i - 1][j][0], C))
 
     # step 4
-    assert all((
-        srs_u[0][1][0].eq(Q_u[-1][2][0]),
-        not Q_u[-1][2][0].eq(0 * G),
-    ))
-    assert all((
-        srs_u[1][0][0].eq(Q_u[-1][0][0]),
-        not Q_u[-1][0][0].eq(0 * G),
-    ))
-    assert all((
-        srs_u[1][0][1].eq(Q_u[-1][1][0]),
-        not Q_u[-1][1][0].eq(0 * G),
-    ))
+    if len(Q_u) > 0:
+        assert all((
+            srs_u[0][1][0].eq(Q_u[-1][2][0]),               # x * G = x * G ^ k_u
+            not Q_u[-1][2][0].eq(0 * G),                    # x * G ^ k_u != 0
+        ))
+        assert all((
+            srs_u[1][0][0].eq(Q_u[-1][0][0]),               # α * G ^ (x ^ 0) = α * G ^ k_u
+            not Q_u[-1][0][0].eq(0 * G),                    # α * G ^ k_u != 0 
+        ))
+        assert all((
+            srs_u[1][0][1].eq(Q_u[-1][1][0]),               # β * G ^ (x ^ 0) = β * G ^ k_u
+            not Q_u[-1][1][0].eq(0 * G),                    # β * G ^ k_u != 0
+        ))
 
     # step 5
     for i in range(1, 2 * n - 1):                           # 1 <= i <= 2n - 2
@@ -325,8 +312,12 @@ def verify(ctx, qap, srs, Q):
             assert pair(A, H).eq(pair(Q_s[i - 1][0], C))    # TODO
 
     # step 9
-    assert pair(srs_s[0], H).eq(pair(G, srs_s[1]))      # (δ * G) o H = G o (δ o H)
-    # TODO: Implement second condition                  # δ * G = δ * G ^ k_s != 1
+    assert pair(srs_s[0], H).eq(pair(G, srs_s[1]))          # (δ * G) o H = G o (δ o H)
+    if len(Q_s) > 0:
+        assert all((
+            srs_s[0].eq(Q_s[-1][0]),                        # δ * G = δ * G ^ k_s
+            not Q_s[-1][0].eq(0 * G),                       # δ * G ^ k_s != 0
+        )) 
 
     # step 10
     # u, v, w, _ = qap.polynomials()
