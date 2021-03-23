@@ -20,7 +20,7 @@ both demo and tests.
 ## Demo
 
 ```commandline
-python3 demo.py
+python3 demo.py [--help]
 ```
 
 ## Installation
@@ -29,7 +29,7 @@ python3 demo.py
 
 ```python
 from snarky_ceremonies import create_context, \
-	generate_trapdoor, QAP, setup, verify
+	generate_trapdoor, QAP, setup, update, verify
 
 # Specify context
 ctx = create_context()					# p, G, H, pairing
@@ -39,6 +39,23 @@ qap = QAP.create_default(ctx, m, n, l)			# Initialize with constant polynomials
 
 # Setup stage (SRS generation)
 srs, trapdoor = setup(ctx, trapdoor, qap)
+
+# Bunch of proofs
+Q = [[], []]
+
+# Phase 1 updates
+
+srs, rho = update(ctx, qap, 1, srs, Q)
+Q[0].append(rho)
+
+...
+
+# Phase 2 updates
+
+srs, rho = update(ctx, qap, 2, srs, Q)
+Q[1].append(rho)
+
+...
 
 # Verification stage
 assert verify(ctx, qap, srs)
