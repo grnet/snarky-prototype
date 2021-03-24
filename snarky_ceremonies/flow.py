@@ -45,6 +45,36 @@ def setup(ctx, trapdoor, qap):
 from snarky_ceremonies.utils import randstar
 from snarky_ceremonies.dlog import prove_dlog
 
+def _specialize(ctx, qap, srs_u):
+    """
+    Specialize, Fig. 6, pg. 19
+    """
+    # import pdb; pdb.set_trace()
+    _, G, H, _, _ = ctx
+    m, n, l = qap.dimensions()
+    u, v, w, t = qap.polynomials()
+    srs_s = [
+        G,
+        H,
+        [],
+        [],
+    ]
+    for i in range(0, m - l):
+        # sum_{0<=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + (x ^ j) * G]
+        s_i = sum([
+            u[i].coeff(j) * srs_u[1][j][1] +            # (u_ij (β x ^ j)) * G  
+            v[i].coeff(j) * srs_u[1][j][0] +            # (v_ij (α x ^ j)) * G
+            w[i].coeff(j) * srs_u[0][j][0]              # (w_ij (x ^ j)) * G
+        for j in range(0, n)], 0 * G)
+        srs_s[2].append(s_i)
+    for i in range(0, n - 1):
+        # sum_{0<=j<=n-1} (t_j x ^ (i + j)) * G
+        s_i = sum([
+            t.coeff(j) * srs_u[0][i + j][0]     # (t_j x ^ (i + j)) * G
+        for j in range(0, n)], 0 * G)
+        srs_s[3].append(s_i)
+    return srs_s
+
 def update(ctx, qap, phi, srs):
     """
     Update, Fig. 6, pg. 19
@@ -98,7 +128,7 @@ def update(ctx, qap, phi, srs):
             ))
 
         # step 9
-        srs_s_new = specialize(ctx, qap, srs_u_new)
+        srs_s_new = _specialize(ctx, qap, srs_u_new)
 
         # step 10
         return (srs_u_new, srs_s_new), rho
@@ -135,41 +165,16 @@ def update(ctx, qap, phi, srs):
         return (srs[0], srs_s_new), rho
 
 
-def specialize(ctx, qap, srs_u):
-    """
-    Specialize, Fig. 6, pg. 19
-    """
-    # import pdb; pdb.set_trace()
-    _, G, H, _, _ = ctx
-    m, n, l = qap.dimensions()
-    u, v, w, t = qap.polynomials()
-    srs_s = [
-        G,
-        H,
-        [],
-        [],
-    ]
-    for i in range(0, m - l):
-        # sum_{0<=j<=n-1} [u_ij(β x ^ j) * G + v_ij(β x ^ j) * G + (x ^ j) * G]
-        s_i = sum([
-            u[i].coeff(j) * srs_u[1][j][1] +            # (u_ij (β x ^ j)) * G  
-            v[i].coeff(j) * srs_u[1][j][0] +            # (v_ij (α x ^ j)) * G
-            w[i].coeff(j) * srs_u[0][j][0]              # (w_ij (x ^ j)) * G
-        for j in range(0, n)], 0 * G)
-        srs_s[2].append(s_i)
-    for i in range(0, n - 1):
-        # sum_{0<=j<=n-1} (t_j x ^ (i + j)) * G
-        s_i = sum([
-            t.coeff(j) * srs_u[0][i + j][0]     # (t_j x ^ (i + j)) * G
-        for j in range(0, n)], 0 * G)
-        srs_s[3].append(s_i)
-    return srs_s
-
-
 from snarky_ceremonies.utils import isG1Elem, isG2Elem
 from snarky_ceremonies.dlog import verify_dlog
 
-def verify(ctx, qap, srs, Q):
+class VerificationFailure(BaseException):
+    pass
+
+def _assert(condition, exception, message):
+    if not condition: raise exception(message)
+
+def _verify(ctx, qap, srs, Q, verbose):
     """
     Verification, Fig. 7, pg. 20
     """
@@ -186,6 +191,14 @@ def verify(ctx, qap, srs, Q):
     assert len(srs_u[0]) == 2 * n - 1
     assert len(srs_u[1]) == n
     for i in range(0, 2 * n - 1):       # 0 <= i <= 2n - 2
+        # _assert(
+        #     isG1Elem(srs_u[0][i][0]), VerificationFailure, 
+        #     '(0, %d, 0)-component of srs_u is not a G1 element' % i,
+        # )
+        # _assert(
+        #     isG2Elem(srs_u[0][i][1]), VerificationFailure, 
+        #     '(0, %d, 1)-component of srs_u is not a G2 element' % i,
+        # )
         assert all((
             isG1Elem(srs_u[0][i][0]),   # (x ^ i) * G E G_1
             isG2Elem(srs_u[0][i][1]),   # (x ^ i) * H E G_2
@@ -294,6 +307,17 @@ def verify(ctx, qap, srs, Q):
 
     for i in range(0, n - 1):   # 0 <= i <= n - 2
         # ((t(x) ^ i) * G) o (δ * Η) == Gt o ((x ^ i) * H)
-        pair(srs_s[3][i], srs_s[1]).eq(pair(Gt, srs_u[0][i][1]))
+        assert pair(srs_s[3][i], srs_s[1]).eq(pair(Gt, srs_u[0][i][1]))
 
+
+def verify(ctx, qap, srs, Q, verbose=True):
+    try:
+        _verify(ctx, qap, srs, Q, verbose)
+    # except VerificationFailure as err:
+    except AssertionError as err:
+        if verbose:
+            print('[-] VERIFICATION FAILED: %s' % err)
+        return False
+    if verbose:
+        print('[+] VERIFICATION SUCCESS')
     return True

@@ -28,8 +28,6 @@ if __name__ == '__main__':
     parser.add_argument('--phases', nargs='+', type=int,
             default=(3, 2,), dest='phases', metavar='',
             help="φ1 and φ2 phase parameters for update (default: 3, 2)")
-    parser.add_argument('--verbose', action='store_true', default=False,
-            help="Display info while running (default: False)")
 
     args = parser.parse_args()
 
@@ -37,7 +35,6 @@ if __name__ == '__main__':
     n = args.n
     l = args.l
     phases = args.phases
-    verbose = args.verbose  # TODO: Use it
 
     ctx = create_context()
     trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)
@@ -63,4 +60,4 @@ if __name__ == '__main__':
             Q[1].append(rho)
 
     # Verify SRS
-    assert verify(ctx, qap, srs, Q)
+    result = verify(ctx, qap, srs, Q)
