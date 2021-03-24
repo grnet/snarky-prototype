@@ -5,7 +5,7 @@ Snarky Ceremonies demo script
 import sys
 import argparse
 from snarky_ceremonies import create_context, \
-    generate_trapdoor, QAP, setup, update, verify
+    generate_trapdoor, QAP, QAPConstructionError, setup, update, verify
 
 
 if __name__ == '__main__':
@@ -39,10 +39,13 @@ if __name__ == '__main__':
     phases = args.phases
     verbose = args.verbose  # TODO: Use it
 
-    # Context creation: order, generators and pairing
     ctx = create_context()
     trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)
-    qap = QAP.create_default(ctx, m, n, l)
+    try:
+        qap = QAP.create_default(ctx, m, n, l)
+    except QAPConstructionError as err:
+        print('[-] Could not create QAP: %s' % err)
+        sys.exit(1)
 
     # Setup (SRS generation)
     srs, trapdoor = setup(ctx, trapdoor, qap)
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     # Updates
     phases = [1] * phases[0] + [2] * phases[1]
     for phase in phases:
-        srs, rho = update(ctx, qap, phase, srs, Q)
+        srs, rho = update(ctx, qap, phase, srs)
         if phase == 1:
             Q[0].append(rho)
         else:

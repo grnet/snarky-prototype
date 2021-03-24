@@ -104,7 +104,4 @@ def test_QAP_construction():
 )
 def test_QAP_construction_errors(u, v, w, t, l):
     with pytest.raises(QAPConstructionError):
-        qap = QAP(ctx, u, v, w, t, l)
-
-def test_QAP_create_default():
-    assert 1
+        QAP(ctx, u, v, w, t, l)
