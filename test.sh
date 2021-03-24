@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 -m pytest --cov-report term-missing --ignore-glob=demo.py --cov=. $*
+python3 -m pytest tests/ --cov-report term-missing --cov=. $*

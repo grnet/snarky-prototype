@@ -174,7 +174,7 @@ class VerificationFailure(BaseException):
 def _assert(condition, exception, message):
     if not condition: raise exception(message)
 
-def _verify(ctx, qap, srs, Q, verbose):
+def _verify(ctx, qap, srs, Q):
     """
     Verification, Fig. 7, pg. 20
     """
@@ -310,14 +310,10 @@ def _verify(ctx, qap, srs, Q, verbose):
         assert pair(srs_s[3][i], srs_s[1]).eq(pair(Gt, srs_u[0][i][1]))
 
 
-def verify(ctx, qap, srs, Q, verbose=True):
+def verify(ctx, qap, srs, Q):
     try:
-        _verify(ctx, qap, srs, Q, verbose)
+        _verify(ctx, qap, srs, Q)
     # except VerificationFailure as err:
     except AssertionError as err:
-        if verbose:
-            print('[-] VERIFICATION FAILED: %s' % err)
         return False
-    if verbose:
-        print('[+] VERIFICATION SUCCESS')
     return True
