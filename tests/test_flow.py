@@ -100,6 +100,7 @@ def test_flow_with_forbidden_phases(phases):
             Q[0].append(rho)
         else:
             Q[1].append(rho)
-    with pytest.raises(AssertionError):
-        verify(ctx, qap, srs, Q)
+    assert not verify(ctx, qap, srs, Q)
+    # with pytest.raises(AssertionError):
+    #     verify(ctx, qap, srs, Q)
 
