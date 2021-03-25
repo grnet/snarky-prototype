@@ -63,12 +63,18 @@ assert verify(ctx, qap, srs)
 
 ## Development
 
-### Tests
-
 ```commandline
 pip3 install -r requirements-dev.txt
 ```
 
+### Tests
+
 ```commandline
 ./test.sh
+```
+
+### Benchmarks
+
+```commandline
+./benchmark.sh
 ```
