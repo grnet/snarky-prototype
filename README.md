@@ -20,7 +20,9 @@ both demo and tests.
 ## Demo
 
 ```commandline
-python3 demo.py [--help]
+$ python3 demo.py
+$ python3 demo.py --m=7 --n=4 --l=6 --phases 30 20
+$ python3 demo.py --help
 ```
 
 ## Installation
@@ -31,34 +33,21 @@ python3 demo.py [--help]
 from snarky_ceremonies import create_context, \
 	generate_trapdoor, QAP, setup, update, verify
 
-# Specify context
 ctx = create_context()					# p, G, H, pairing
 trapdoor = generate_trapdoor(ctx, 1, 1, 1, 1)		# (α, β, δ, x) = (1, 1, 1, 1)
 m, n, l = 50, 40, 30					# Specify QAP dimensions
 qap = QAP.create_default(ctx, m, n, l)			# Initialize with constant polynomials
 
-# Setup stage (SRS generation)
-srs, trapdoor = setup(ctx, trapdoor, qap)
+srs, trapdoor = setup(ctx, trapdoor, qap)		# Setup (SRS initialization)
+Q = [[], []]						# Bunch of proofs
 
-# Bunch of proofs
-Q = [[], []]
-
-# Phase 1 updates
-
-srs, rho = update(ctx, qap, 1, srs, Q)
+srs, rho = update(ctx, qap, 1, srs)			# Phase 1 update
 Q[0].append(rho)
 
-...
-
-# Phase 2 updates
-
-srs, rho = update(ctx, qap, 2, srs, Q)
+srs, rho = update(ctx, qap, 2, srs)			# Phase 2 update
 Q[1].append(rho)
 
-...
-
-# Verification stage
-assert verify(ctx, qap, srs)
+assert verify(ctx, qap, srs)				# Verification
 ```
 
 ## Development

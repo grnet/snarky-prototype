@@ -67,10 +67,7 @@ if __name__ == '__main__':
     phases = [1] * phases[0] + [2] * phases[1]
     for phase in phases:
         srs, rho = update(ctx, qap, phase, srs)
-        if phase == 1:
-            Q[0].append(rho)
-        else:
-            Q[1].append(rho)
+        Q[0 if phase == 1 else 1].append(rho)
         next_curr = time.time()
         print('[+] Updated SRS phase %d (%s sec)' % (phase, _round(next_curr - curr)))
         curr = next_curr
@@ -79,7 +76,7 @@ if __name__ == '__main__':
     verified = verify(ctx, qap, srs, Q)
     next_curr = time.time()
     if verified:
-        print('[+] VERIFICATION SUCCESS (%s)' % _round(next_curr - curr))
+        print('[+] VERIFICATION SUCCESS (%s sec)' % _round(next_curr - curr))
     else:
         print('[-] FAILED to verify SRS')
     end = next_curr
