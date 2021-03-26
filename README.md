@@ -9,12 +9,11 @@ apt-get install build-essential libssl-dev
 pip3 install -r requirements.txt
 ```
 
-Assuming you have Docker, you can alternatively run the dev container and work 
-in a Debian environment with preinstalled prerequisites, where you can run
-both demo and tests.
+Assuming you have Docker, you can alternatively enter the provided container and
+work in a Debian environment with preinstalled prerequisites.
 
 ```commandline
-./run-dev-container --help
+./run-container.sh
 ```
 
 ## Demo
@@ -54,6 +53,13 @@ assert verify(ctx, qap, srs)				# Verification
 
 ```commandline
 pip3 install -r requirements-dev.txt
+```
+
+You can alternatively work in the provided Debian container with all prerequisites
+preinstalled.
+
+```
+./run-container.sh [--help]
 ```
 
 ### Tests
